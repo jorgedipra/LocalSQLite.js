@@ -15,6 +15,240 @@
     <link rel="icon" type="image/png" href="./logo.png" />
 </head>
 <body>
+    <style>
+        html{
+            background-color: #3c4041;
+        }
+        button{
+            cursor: pointer;
+            color: #1b1e1f;
+            background: #6d81eb;
+            border: solid 1px #03A9F4;
+            border-radius: 3px;
+            font-size: 20px;
+
+        }
+        #console-output {
+            background-color: #1e1e1e;
+            color: #ffffff;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 5px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+        }
+        
+        .log-message { color: #d4d4d4; }
+        .error-message { color: #ff4444; }
+        .warn-message { color: #ffc107; }
+        .info-message { color: #29b6f6; }
+    </style>
+    <script>
+         // Capturar la consola original
+        const originalConsole = {
+            log: console.log,
+            error: console.error,
+            warn: console.warn,
+            info: console.info
+        };
+        let contador = 1;
+
+        // Función para mostrar mensajes en el DOM
+        function displayInPage(message, type = 'log') {
+            const consoleOutput = document.getElementById('console-output');
+            const messageElement = document.createElement('div');
+            
+            messageElement.className = `${type}-message`;
+            messageElement.textContent = `> ${message}`;
+            
+            consoleOutput.appendChild(messageElement);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+
+        // Sobreescribir los métodos de la consola
+        console.log = function(...args) {
+            originalConsole.log(...args);
+            displayInPage(args.join(' '), 'log');
+        };
+
+        console.error = function(...args) {
+            originalConsole.error(...args);
+            displayInPage(args.join(' '), 'error');
+        };
+
+        console.warn = function(...args) {
+            originalConsole.warn(...args);
+            displayInPage(args.join(' '), 'warn');
+        };
+
+        console.info = function(...args) {
+            originalConsole.info(...args);
+            displayInPage(args.join(' '), 'info');
+        };
+
+        // Función para limpiar la consola visible
+        function clearConsole() {
+            document.getElementById('console-output').innerHTML = '';
+        }
+
+        function addUser() {
+            document.getElementById('addUser').innerHTML = 'Agregando...';
+            addUser_f();
+        }
+        function addUser_f() {
+            document.getElementById('addUser').innerHTML = 'Agregar Usuario';
+            db2.insert('users', { name: 'Maria', email: 'prueba@example.com', age: 30 });
+            db2.insert('cargos', { id_user: '4', nombre: 'user' });
+
+
+            console.warn('-------------[nuevos datos]-----------')
+            const results = db2.select('users');
+            results.forEach(record => {
+                console.log(`User ID: ${record.id}, Name: ${record.name}, Email: ${record.email}`);
+            });
+            console.warn('------------------------')
+            const results2 = db2.select('cargos');
+            results2.forEach(record => {
+                console.log(`id_user: ${record.id_user}, nombre: ${record.nombre}`);
+            });
+
+            // Generar mensaje diferente cada vez
+            const mensaje = `Nuevo mensaje dinámico ${contador}`;
+            const tipos = ['log', 'error', 'warn', 'info'];
+            const tipoAleatorio = tipos[Math.floor(Math.random() * tipos.length)];
+            
+            // Usar la consola con tipo aleatorio
+            console[tipoAleatorio](mensaje);
+            
+            contador++;
+        }
+
+    </script>
+    <h1>Consola Visible</h1>
+    <button onclick="clearConsole()">Limpiar Consola</button>
+    <div id="console-output"></div>
+    <button id="addUser" onclick="addUser()">Agregar Usuario</button>
+    </button>
+
+<!--  -->
     <script src="./lib/LocalSQLite.js"></script>
+    <script>
+        const db = new DBEngine('usersDB'); // Creación de la base de datos
+        const db2 = new DBEngine('cargosDB'); // Creación de la base de datos2
+        const db3 = new DBEngine('joinDB');
+
+        db.load().then(() => {
+            // Crear la tabla 'users' y añadir registros
+            db.createTable('users',  // Nombre de la tabla
+                ['name', 'email', 'age'],   // Campos
+                'email' // Campo unico
+            );
+
+            db.insert('users', { name: 'Jorge', email: 'jorge@example.com', age: 30 });
+            db.insert('users', { name: 'Ana', email: 'ana@example.com', age: 25 });
+            db.insert('users', { name: 'Michael', email: 'mmm@example.com', age: 25 });
+
+
+            // Consultar los datos
+                // console.log(db.select('users'));
+            const results = db.select('users');
+                // results.forEach(record => {
+                //     console.log(record);
+                // });
+            results.forEach(record => {
+                console.log(`User ID: ${record.id}, Name: ${record.name}, Email: ${record.email}`);
+            });
+
+
+            // Output:
+            // {id: 1, name: 'Jorge', email: 'jorge@example.com', age: 30}
+            // {id: 2, name: 'Ana', email: 'ana@example.com', age: 25}
+            // {id: 3, name: 'Michael', email: 'mmm@example.com', age: 25
+            console.warn('------------------------')
+            db.delete('users', { id: 3 });
+            // console.log(db.select('users'));
+            const results2 = db.select('users');
+            results2.forEach(record => {
+                console.log(`User ID: ${record.id}, Name: ${record.name}, Email: ${record.email}`);
+            });
+             // Output:
+            // {id: 1, name: 'Jorge', email: 'jorge@example.com', age: 30}
+            // {id: 2, name: 'Ana', email: 'ana@example.com', age: 25}
+        });
+
+        db2.load().then(() => {
+            db2.createTable('users',  
+                ['name', 'email', 'age'],   
+                'email' 
+            );
+
+            db2.insert('users', { name: 'Jorge', email: 'jorge@example.com', age: 30 });
+            db2.insert('users', { name: 'Ana', email: 'ana@example.com', age: 25 });
+            db2.insert('users', { name: 'Michael', email: 'mmm@example.com', age: 25 });
+
+            console.warn('------------------------')
+            // console.log(db2.select('users'));
+            const results = db.select('users');
+            results.forEach(record => {
+                console.log(`User ID: ${record.id}, Name: ${record.name}, Email: ${record.email}`);
+            });
+            // Output:
+            // {id: 1, name: 'Jorge', email: 'jorge@example.com', age: 30}
+            // {id: 2, name: 'Ana', email: 'ana@example.com', age: 25}
+            // {id: 3, name: 'Michael', email: 'mmm@example.com', age: 25
+
+            db2.createTable('cargos',  
+                ['id_user', 'nombre'],  
+                'id_user' 
+            );
+
+            db2.insert('cargos', { id_user: '1', nombre: 'admin' });
+            db2.insert('cargos', { id_user: '2', nombre: 'user' });
+            db2.insert('cargos', { id_user: '3', nombre: 'user' });
+            // Output:
+            // {id: 1, id_user: '1', nombre: 'admin'}
+            // {id: 2, id_user: '2', nombre: 'user'}
+            // {id: 2, id_user: '3', nombre: 'user'}
+
+            console.warn('------------------------')
+            // console.log(db2.select('cargos'));
+            const results2 = db2.select('cargos');
+            results2.forEach(record => {
+                console.log(`id_user: ${record.id_user}, nombre: ${record.nombre}`);
+            });
+        });
+
+        db3.load().then(() => {
+            db3.createTable('users', ['id', 'name', 'age'], 'name');
+            db3.createTable('orders', ['id', 'userId', 'product'], 'product');
+
+            // Insertar datos
+            db3.insert('users', { name: 'Jorge', age: 30 });
+            db3.insert('users', { name: 'Ana', age: 25 });
+            db3.insert('orders', { userId: 1, product: 'Laptop' });
+            db3.insert('orders', { userId: 2, product: 'Smartphone' });
+            db3.insert('orders', { userId: 1, product: 'Headphones' });
+
+            const result1 = db3.select('users');
+            const result2 = db3.select('orders');
+            const result3 = db3.join('users', 'orders', 'id', 'userId');
+            console.warn('-----------[tabla 1]-------------')
+            // console.log(result);
+            result1.forEach(record => {
+                console.log(`id: ${record.id}, nombre: ${record.name}, age: ${record.age}`);
+            });
+            console.warn('----------[tabla 2]--------------')
+            result2.forEach(record => {
+                console.log(`id: ${record.id}, userId: ${record.userId}, product: ${record.product}`);
+            });
+            console.warn('----------[join]--------------')
+            result3.forEach(record => {
+                console.log(`id: ${record.id}, nombre: ${record.name}, product: ${record.product}`);
+            });
+        });
+    </script>
 </body>
 </html>
+
+
