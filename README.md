@@ -16,11 +16,14 @@ const db = new DBEngine('usersDB'); // Base de datos de usuarios
 const db2 = new DBEngine('cargosDB'); // Otra base de datos
 const db3 = new DBEngine('joinDB'); // Base de datos para joins
 ```
-### 2️⃣ Cargar y crear tablas
+### 2️⃣ Cargar y crear tablas con Index
 ```javascript
-db.load().then(() => {
-    db.createTable('users', ['name', 'email', 'age'], 'email'); // 'email' como campo único
-});
+    // Crear la tabla 'users' y añadir registros
+    db.createTable('users',  // Nombre de la tabla
+        ['name', 'email', 'age'],   // Campos
+        'email' // Campo unico
+    );
+    db.createIndex('users', 'email');  // Índice en el campo "email"
 ```
 ###  3️⃣ Insertar datos en la tabla
 ```javascript
@@ -30,6 +33,19 @@ db.insert('users', { name: 'Ana', email: 'ana@example.com', age: 25 });
 db.insert('users', { name: 'Michael', email: 'mmm@example.com', age: 25 });
 ```
 # 🛠️ Consultas Disponibles
+## 🧩 INDEX
+### Muestra los Index
+```javascript
+const emailIndex = db.tables['users'].indexes['email'];
+
+    for (const email in emailIndex) {
+        console.log(`Index-Email: ${email}`);
+        emailIndex[email].forEach(record => {
+            console.log(`User ID: ${record.id}, Name: ${record.name}, Email: ${record.email}, age: ${record.age}`);
+        });
+    }
+```  
+         
 ## 🔍 SELECT
 ### SELECT ALL
 ```SQL
@@ -103,6 +119,14 @@ resultsWherelike.forEach(record => {
 });
 
 ```
+### UPDATE 
+```SQL
+UPDATE users SET age = 35 WHERE name = "Jorge"
+```
+```javascript
+const updatedRows = db.update('users', { name: 'Jorge' }, { age: 35 });
+console.warn(`Registros actualizados: ${updatedRows}`);
+```
 
 ## 🗑️ Uso de DELETE 
 ### DELETE WHERE
@@ -148,8 +172,22 @@ db3.load().then(() => {
     ✅ Eliminación de registros con DELETE
     ✅ Eliminación de duplicados con DISTINCT
     ✅ Soporte para JOIN entre tablas
+    ✅ Soporte para UPDATE de registros
+    ✅ Implementación de índices para Optimización de consultas
 
 # 🔧 Próximas Mejoras
-🔹 Soporte para UPDATE de registros
 🔹 Implementación de transacciones con BEGIN y COMMIT
 🔹 Serialización de datos para persistencia en archivos
+🔹 Soporte Claves Foráneas y Relaciones para asegurar consistencia entre tablas relacionadas.
+🔹 Validación de Tipos de Datos para Validar tipos, formatos y campos obligatorios al insertar
+🔹 Métodos de Agregación estos permite un Soporte a funciones como COUNT, SUM, AVG, MIN, MAX.
+🔹 Paginaciónpara permitir soporte a parámetros como LIMIT y OFFSET con el fin tener resultados paginados.
+🔹 Backup y Restauración
+🔹 Alterar Tablas
+🔹 Soporte para Subconsultas
+🔹 Full-Text Search
+🔹 Triggers
+🔹 Mejorar JOINs
+🔹 Métodos de Utilidad
+🔹 Seguridad (Cifra datos en localStorag y Previene inyección de operadores)
+🔹 Soporte para Promesas/Async
