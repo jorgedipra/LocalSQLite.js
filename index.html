@@ -34,7 +34,7 @@
             padding: 20px;
             margin: 20px;
             border-radius: 5px;
-            max-height: 400px;
+            max-height: 600px;
             overflow-y: auto;
             font-family: monospace;
         }
@@ -145,27 +145,88 @@
                 'email' // Campo unico
             );
 
+            db.insert('users', { name: 'Milena', email: 'mile@example.com', age: 30 });
             db.insert('users', { name: 'Jorge', email: 'jorge@example.com', age: 30 });
             db.insert('users', { name: 'Ana', email: 'ana@example.com', age: 25 });
             db.insert('users', { name: 'Michael', email: 'mmm@example.com', age: 25 });
+            db.insert('users', { name: 'Jorgito', email: 'Jorgito@example.com', age: 30 });
+            db.insert('users', { name: 'Jorgito', email: 'Jorgito2@example.com', age: 30 });
+            db.insert('users', { name: 'Jorgito', email: 'Jorgito3@example.com', age: 30 });
 
-
+            console.warn('------------[SELECT * FROM users;]------------')   
             // Consultar los datos
                 // console.log(db.select('users'));
             const results = db.select('users');
                 // results.forEach(record => {
                 //     console.log(record);
                 // });
+            
             results.forEach(record => {
-                console.log(`User ID: ${record.id}, Name: ${record.name}, Email: ${record.email}`);
+                console.log(`User ID: ${record.id}, Name: ${record.name}, Email: ${record.email}, age: ${record.age}`);
             });
-
-
             // Output:
             // {id: 1, name: 'Jorge', email: 'jorge@example.com', age: 30}
             // {id: 2, name: 'Ana', email: 'ana@example.com', age: 25}
-            // {id: 3, name: 'Michael', email: 'mmm@example.com', age: 25
-            console.warn('------------------------')
+            // {id: 3, name: 'Michael', email: 'mmm@example.com', age: 25}
+            // {id: 4, Name: Milena, email: mile@example.com, age: 30}
+            // {id: 5, Name: Jorgito, email: Jorgito@example.com, age: 30}
+            // {id: 6, Name: Jorgito, email:'Jorgito2@example.com', age: 30 }
+            // {id: 7, Name: Jorgito, email:'Jorgito3@example.com', age: 30 }
+
+            console.warn('------------[SELECT DISTINCT name, age FROM users;]------------')  
+            const resultsDistinct = db.select('users', {}, 'AND', ['name', 'age'], {}, ['name', 'age']);
+            // console.log(resultsDistinct);
+            resultsDistinct.forEach(record => {
+                console.log(`name: ${record.name} age: ${record.age}`);
+            });
+
+
+            console.warn('------------[SELECT name, age FROM users ORDER BY name ASC;]------------')  
+            const resultsColumns = db.select('users', {}, 'AND', ['name', 'age'], { column: 'name', order: 'ASC' });
+            // console.log(resultsColumns);
+            resultsColumns.forEach(record => {
+                console.log(`name: ${record.name}, age: ${record.age}`);
+            });
+
+            console.warn('------------[SELECT name, age FROM users ORDER BY name DESC;]------------')  
+            const results2Columns = db.select('users', {}, 'AND', ['name', 'age'], { column: 'name', order: 'DESC' });
+            // console.log(resultsColumns);
+            results2Columns.forEach(record => {
+                console.log(`name: ${record.name}, age: ${record.age}`);
+            });
+
+            console.warn('------------[SELECT * FROM users ORDER BY age ASC, name DESC;]------------')  
+            const resultsOrderedMulti = db.select('users', {}, 'AND', [], [
+                                                { column: 'age', order: 'ASC' },
+                                                { column: 'name', order: 'DESC' }
+                                            ]);
+            resultsOrderedMulti.forEach(record => {
+                console.log(`name: ${record.name}, age: ${record.age}`);
+            });
+
+            console.warn('---------[SELECT * FROM users WHERE age = 25]---------------')
+
+            const resultsWhere = db.select('users', { age: 25 });
+            resultsWhere.forEach(record => {
+                console.log(`User ID: ${record.id}, Name: ${record.name}, Email: ${record.email}, age: ${record.age}`);
+            });
+            // Output:
+            // {id: 2, name: 'Ana', email: 'ana@example.com', age: 25}
+            // {id: 3, name: 'Michael', email: 'mmm@example.com', age: 25}
+
+            console.warn('---------[SELECT * FROM users WHERE age = 25 OR  like "%na%"]---------------')
+            // const resultsWherelike = db.select('users', { name: { $like: 'na' },age: 30}, 'AND');
+            const resultsWherelike = db.select('users', { name: { $like: 'na' },age: 25}, 'OR');
+            resultsWherelike.forEach(record => {
+                console.log(`User ID: ${record.id}, Name: ${record.name}, Email: ${record.email}, age: ${record.age}`);
+            });
+            // Output:
+            // {id: 2, name: 'Ana', email: 'ana@example.com', age: 25}
+            // {id: 4, Name: Milena, email: mile@example.com, age: 30}
+            // {id: 3, name: 'Michael', email: 'mmm@example.com', age: 25}
+
+            
+            console.warn('---------[delete id 3 ]---------------')
             db.delete('users', { id: 3 });
             // console.log(db.select('users'));
             const results2 = db.select('users');
@@ -175,48 +236,7 @@
              // Output:
             // {id: 1, name: 'Jorge', email: 'jorge@example.com', age: 30}
             // {id: 2, name: 'Ana', email: 'ana@example.com', age: 25}
-        });
-
-        db2.load().then(() => {
-            db2.createTable('users',  
-                ['name', 'email', 'age'],   
-                'email' 
-            );
-
-            db2.insert('users', { name: 'Jorge', email: 'jorge@example.com', age: 30 });
-            db2.insert('users', { name: 'Ana', email: 'ana@example.com', age: 25 });
-            db2.insert('users', { name: 'Michael', email: 'mmm@example.com', age: 25 });
-
-            console.warn('------------------------')
-            // console.log(db2.select('users'));
-            const results = db.select('users');
-            results.forEach(record => {
-                console.log(`User ID: ${record.id}, Name: ${record.name}, Email: ${record.email}`);
-            });
-            // Output:
-            // {id: 1, name: 'Jorge', email: 'jorge@example.com', age: 30}
-            // {id: 2, name: 'Ana', email: 'ana@example.com', age: 25}
-            // {id: 3, name: 'Michael', email: 'mmm@example.com', age: 25
-
-            db2.createTable('cargos',  
-                ['id_user', 'nombre'],  
-                'id_user' 
-            );
-
-            db2.insert('cargos', { id_user: '1', nombre: 'admin' });
-            db2.insert('cargos', { id_user: '2', nombre: 'user' });
-            db2.insert('cargos', { id_user: '3', nombre: 'user' });
-            // Output:
-            // {id: 1, id_user: '1', nombre: 'admin'}
-            // {id: 2, id_user: '2', nombre: 'user'}
-            // {id: 2, id_user: '3', nombre: 'user'}
-
-            console.warn('------------------------')
-            // console.log(db2.select('cargos'));
-            const results2 = db2.select('cargos');
-            results2.forEach(record => {
-                console.log(`id_user: ${record.id_user}, nombre: ${record.nombre}`);
-            });
+            // {id: 4, Name: Milena, email: mile@example.com, age: 30}
         });
 
         db3.load().then(() => {
