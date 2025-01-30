@@ -134,26 +134,33 @@
 <!--  -->
     <script src="./lib/LocalSQLite.js"></script>
     <script>
-        const db = new DBEngine('usersDB'); // Creación de la base de datos
-        const db2 = new DBEngine('cargosDB'); // Creación de la base de datos2
-        const db3 = new DBEngine('joinDB');
+        const db  = new DBEngine('usersDB'); // Creación de la base de datos
+        const db2 = new DBEngine('cargosDB'); // Creación de la base de datos 2
+        const db3 = new DBEngine('joinDB'); // Creación de la base de datos 3
 
         db.load().then(() => {
+            console.info('------[NUEVA BASE DE DATOS]-------')
             // Crear la tabla 'users' y añadir registros
             db.createTable('users',  // Nombre de la tabla
                 ['name', 'email', 'age'],   // Campos
                 'email' // Campo unico
             );
+
             db.createIndex('users', 'email');  // Índice en el campo "email"
 
-            db.insert('users', { name: 'Milena', email: 'mile@example.com', age: 30 });
-            db.insert('users', { name: 'Jorge', email: 'jorge@example.com', age: 30 });
-            db.insert('users', { name: 'Ana', email: 'ana@example.com', age: 25 });
-            db.insert('users', { name: 'Michael', email: 'mmm@example.com', age: 25 });
-            db.insert('users', { name: 'Jorgito', email: 'Jorgito@example.com', age: 30 });
-            db.insert('users', { name: 'Jorgito', email: 'Jorgito2@example.com', age: 30 });
-            db.insert('users', { name: 'Jorgito', email: 'Jorgito3@example.com', age: 30 });
-
+            // Usa MultipleInsert para insertar todos los registros en una sola llamada
+            msnReturn = db.MultipleInsert('users', [
+                { name: 'Milena', email: 'mile@example.com', age: 30 },
+                { name: 'Jorge', email: 'jorge@example.com', age: 30 },
+                { name: 'Ana', email: 'ana@example.com', age: 25 },
+                { name: 'Ana Duplicada', email: 'ana@example.com', age: 30 },
+                { name: 'Michael', email: 'mmm@example.com', age: 25 },
+                { name: 'Jorgito', email: 'Jorgito@example.com', age: 30 },
+                { name: 'Jorgito', email: 'Jorgito2@example.com', age: 30 },
+                { name: 'Jorgito', email: 'Jorgito3@example.com', age: 30 }
+            ]);
+            console.error(msnReturn);
+            
             console.warn('------------[SELECT * FROM users;]------------')   
             // Consultar los datos
                 // console.log(db.select('users'));
@@ -173,6 +180,7 @@
             // {id: 5, Name: Jorgito, email: Jorgito@example.com, age: 30}
             // {id: 6, Name: Jorgito, email:'Jorgito2@example.com', age: 30 }
             // {id: 7, Name: Jorgito, email:'Jorgito3@example.com', age: 30 }
+
             console.warn('------------[SELECT * FROM users where email="jorge@example.com"]------------')  
             const resultsIndex = db.select('users', { email: 'jorge@example.com' })
 
@@ -180,19 +188,19 @@
                 console.log(`User ID: ${record.id}, Name: ${record.name}, Email: ${record.email}, age: ${record.age}`);
             });
 
-            console.warn('------------[Muestra los Index]------------')  
+            console.warn('------------[Muestra los Index]------------');
 
-            const emailIndex = db.tables['users'].indexes['email'];
+                // Acceder a los índices desde la propiedad `indexes` de la DB
+                const usersIndexes = db.indexes['users']; 
+                const emailIndex = usersIndexes['email'];
 
-            for (const email in emailIndex) {
-                console.log(`Index-Email: ${email}`);
-                emailIndex[email].forEach(record => {
-                    console.log(`User ID: ${record.id}, Name: ${record.name}, Email: ${record.email}, age: ${record.age}`);
-                });
-            }
-
-
-            
+                for (const email in emailIndex) {
+                    console.log(`Email: ${email}`);
+                        
+                    emailIndex[email].forEach(record => {
+                        console.log(`ID: ${record.id} | Nombre: ${record.name} | Edad: ${record.age}`);
+                    });
+                }
 
             console.warn('------------[SELECT DISTINCT name, age FROM users;]------------')  
             const resultsDistinct = db.select('users', {}, 'AND', ['name', 'age'], {}, ['name', 'age']);
@@ -277,15 +285,20 @@
             db3.createTable('orders', ['id', 'userId', 'product'], 'product');
 
             // Insertar datos
-            db3.insert('users', { name: 'Jorge', age: 30 });
-            db3.insert('users', { name: 'Ana', age: 25 });
-            db3.insert('orders', { userId: 1, product: 'Laptop' });
-            db3.insert('orders', { userId: 2, product: 'Smartphone' });
-            db3.insert('orders', { userId: 1, product: 'Headphones' });
+            const dato1 = db3.insert('users', { name: 'Jorge', age: 30 }, false,[false]);// false en [] como [false] es para no mostrar mensaje de error en consola, pero si retorna este mensaje.
+            console.log(dato1);
+
+            db3.insert('users', { name: 'Ana', age: 25 }, true);
+
+            db3.insert('orders', { userId: 1, product: 'Laptop' }, false);
+            db3.insert('orders', { userId: 2, product: 'Smartphone' }, false);
+            db3.insert('orders', { userId: 1, product: 'Headphones' }, true);
+
 
             const result1 = db3.select('users');
             const result2 = db3.select('orders');
             const result3 = db3.join('users', 'orders', 'id', 'userId');
+            console.info('------[OTRA BASE DE DATOS]-------')
             console.warn('-----------[tabla 1]-------------')
             // console.log(result);
             result1.forEach(record => {
@@ -297,10 +310,34 @@
             });
             console.warn('----------[join]--------------')
             result3.forEach(record => {
-                console.log(`id: ${record.id}, nombre: ${record.name}, product: ${record.product}`);
+                console.log(`id: ${record.id}, Nombre: ${record.name}, Producto: ${record.product}`);
             });
+
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const db = new DBEngine('joinDB');
+            db.load(); // Cargar datos desde localStorage
+            const result = db.select('users');
+
+        //---::impimir en html::---
+            // Seleccionar el contenedor <ul> del DOM
+            const userList = document.getElementById('userList');
+            // Generar elementos <li> dinámicamente
+            result.forEach(record => {
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `
+                    User ID: ${record.id}, 
+                    Nombre: ${record.name}, 
+                    Edad: ${record.age}
+                `;
+                userList.appendChild(listItem);
+            });
+
         });
     </script>
+    <h2>Usuarios::tabla 1</h2>
+    <ul id="userList"></ul>
 </body>
 </html>
 

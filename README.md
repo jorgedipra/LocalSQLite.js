@@ -26,11 +26,40 @@ const db3 = new DBEngine('joinDB'); // Base de datos para joins
     db.createIndex('users', 'email');  // Índice en el campo "email"
 ```
 ###  3️⃣ Insertar datos en la tabla
+#### Insert simple
 ```javascript
 db.insert('users', { name: 'Milena', email: 'mile@example.com', age: 30 });
 db.insert('users', { name: 'Jorge', email: 'jorge@example.com', age: 30 });
 db.insert('users', { name: 'Ana', email: 'ana@example.com', age: 25 });
-db.insert('users', { name: 'Michael', email: 'mmm@example.com', age: 25 });
+```
+#### Insert simple  autoSave desactivado
+Al final de todas las inserciones, ejecutas db3.save() para persistir todos los cambios en una sola operación.
+```javascript
+db3.insert('orders', { userId: 1, product: 'Laptop' }, false); // No guardar aún
+db3.insert('orders', { userId: 2, product: 'Smartphone' }, false); // No guardar aún
+db3.insert('orders', { userId: 1, product: 'Headphones' }, false); // No guardar aún
+// Guardar manualmente al final
+db3.save(); // persisten todos los datos
+```
+#### Insert simple  autoSave activado manual
+Al pasar false como tercer argumento, evitas que se ejecute this.save() después de cada inserción.Esto reduce las operaciones de escritura en localStorage de 3 a 1
+```javascript
+db3.insert('orders', { userId: 1, product: 'Laptop' }, false); // No guardar aún
+db3.insert('orders', { userId: 2, product: 'Smartphone' }, false); // No guardar aún
+db3.insert('orders', { userId: 1, product: 'Headphones' }, true); // Guardado total
+```
+#### Insert Multiple
+```javascript
+// Usa MultipleInsert para insertar todos los registros en una sola llamada
+db.MultipleInsert('users', [
+    { name: 'Milena', email: 'mile@example.com', age: 30 },
+    { name: 'Jorge', email: 'jorge@example.com', age: 30 },
+    { name: 'Ana', email: 'ana@example.com', age: 25 },
+    { name: 'Michael', email: 'mmm@example.com', age: 25 },
+    { name: 'Jorgito', email: 'Jorgito@example.com', age: 30 },
+    { name: 'Jorgito', email: 'Jorgito2@example.com', age: 30 },
+    { name: 'Jorgito', email: 'Jorgito3@example.com', age: 30 }
+]);
 ```
 # 🛠️ Consultas Disponibles
 ## 🧩 INDEX
