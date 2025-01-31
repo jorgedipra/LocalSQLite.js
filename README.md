@@ -9,6 +9,9 @@ Una librería en JavaScript puro que funcioná como un motor de base de datos si
 
 ## 🚀 Instalación y Uso
 Para utilizar **DBEngine**, sigue los siguientes pasos:
+---
+### Lib:
+  URL: https://jorgedipra.github.io/LocalSQLite.js/lib/LocalSQLite.js
 
 ### 1️⃣ Creación de la base de datos
 ```javascript
@@ -148,6 +151,47 @@ resultsWherelike.forEach(record => {
 });
 
 ```
+### Agregación (COUNT, SUM, AVG, MIN, MAX)
+- COUNT: Cuenta registros. Si el campo es *, cuenta todos; si es un campo, cuenta valores no nulos.
+
+- SUM/AVG: Ignora valores no numéricos y realiza la operación solo con datos válidos.
+
+- MIN/MAX: Encuentra el valor mínimo/máximo válido en el campo especificado.
+
+- Manejo de Errores: 
+    - Si la tabla no existe, retorna un objeto vacío.
+    - Si se especifica una función no soportada, muestra un error y retorna null.
+- Notas Clave:
+   - Validación de Campos: Las operaciones ignoran valores undefined o no numéricos.
+
+   - Precisión: AVG redondea según JavaScript, pero puedes ajustarlo con toFixed() si es necesario.
+
+   - Eficiencia: Al reutilizar select, se aprovechan índices y optimizaciones existentes.
+```SQL
+SELECT 
+    COUNT(*) AS total, 
+    AVG(age) AS avgAge, 
+    MAX(age) AS maxAge , 
+    MIN(age) AS minAge , 
+    SUM(age) AS sumAge
+FROM users 
+    WHERE name like "jo"; 
+```
+```javascript
+ const resultsAggregate = db.selectAggregate('users', {
+                where: { name: { $like: 'jo' } }, // Filtro WHERE
+                aggregate: {
+                    total: 'COUNT(*)',
+                    avgAge: 'AVG(age)',
+                    maxAge: 'MAX(age)',
+                    minAge: 'MIN(age)',
+                    sumAge: 'SUM(age)'
+                }
+            });
+
+const result = resultsAggregate;
+    console.log(`Total: ${result.total}, Promedio: ${result.avgAge}, Máximo: ${result.maxAge}, Mínimo: ${result.minAge}, Suma de edades: ${result.sumAge}`);
+```
 ### UPDATE 
 ```SQL
 UPDATE users SET age = 35 WHERE name = "Jorge"
@@ -203,20 +247,20 @@ db3.load().then(() => {
     ✅ Soporte para JOIN entre tablas
     ✅ Soporte para UPDATE de registros
     ✅ Implementación de índices para Optimización de consultas
+    ✅ Métodos de Agregación estos permite un Soporte a funciones como COUNT, SUM, AVG, MIN, MAX.
 
 # 🔧 Próximas Mejoras
-🔹 Implementación de transacciones con BEGIN y COMMIT
-🔹 Serialización de datos para persistencia en archivos
-🔹 Soporte Claves Foráneas y Relaciones para asegurar consistencia entre tablas relacionadas.
-🔹 Validación de Tipos de Datos para Validar tipos, formatos y campos obligatorios al insertar
-🔹 Métodos de Agregación estos permite un Soporte a funciones como COUNT, SUM, AVG, MIN, MAX.
-🔹 Paginaciónpara permitir soporte a parámetros como LIMIT y OFFSET con el fin tener resultados paginados.
-🔹 Backup y Restauración
-🔹 Alterar Tablas
-🔹 Soporte para Subconsultas
-🔹 Full-Text Search
-🔹 Triggers
-🔹 Mejorar JOINs
-🔹 Métodos de Utilidad
-🔹 Seguridad (Cifra datos en localStorag y Previene inyección de operadores)
-🔹 Soporte para Promesas/Async
+    🔹 Implementación de transacciones con BEGIN y COMMIT
+    🔹 Serialización de datos para persistencia en archivos
+    🔹 Soporte Claves Foráneas y Relaciones para asegurar consistencia entre tablas relacionadas.
+    🔹 Validación de Tipos de Datos para Validar tipos, formatos y campos obligatorios al insertar
+    🔹 Paginaciónpara permitir soporte a parámetros como LIMIT y OFFSET con el fin tener resultados paginados.
+    🔹 Backup y Restauración
+    🔹 Alterar Tablas
+    🔹 Soporte para Subconsultas
+    🔹 Full-Text Search
+    🔹 Triggers
+    🔹 Mejorar JOINs
+    🔹 Métodos de Utilidad
+    🔹 Seguridad (Cifra datos en localStorag y Previene inyección de operadores)
+    🔹 Soporte para Promesas/Async

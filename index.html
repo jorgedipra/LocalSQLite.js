@@ -253,8 +253,27 @@
             // {id: 2, name: 'Ana', email: 'ana@example.com', age: 25}
             // {id: 4, Name: Milena, email: mile@example.com, age: 30}
             // {id: 3, name: 'Michael', email: 'mmm@example.com', age: 25}
+            console.warn(`---------[
+                SELECT COUNT(*) AS total, AVG(age) AS avgAge, MAX(age) AS maxAge , MIN(age) AS minAge , SUM(age) AS sumAge
+                FROM users 
+                WHERE name like "jo"; 
+                ]---------------`)
 
-            
+            const resultsAggregate = db.selectAggregate('users', {
+                where: { name: { $like: 'jo' } }, // Filtro WHERE
+                aggregate: {
+                    total: 'COUNT(*)',
+                    avgAge: 'AVG(age)',
+                    maxAge: 'MAX(age)',
+                    minAge: 'MIN(age)',
+                    sumAge: 'SUM(age)'
+                }
+            });
+            // console.log(resultsAggregate);
+            const result = resultsAggregate;
+            console.log(`Total: ${result.total}, Promedio: ${result.avgAge}, Máximo: ${result.maxAge}, Mínimo: ${result.minAge}, Suma de edades: ${result.sumAge}`);
+
+                        
             console.warn('---------[delete id 3 ]---------------')
             db.delete('users', { id: 3 });
             // console.log(db.select('users'));
@@ -276,7 +295,7 @@
             resultsUpdated.forEach(record => {
                 console.log(`User ID: ${record.id}, Name: ${record.name}, Age: ${record.age}`);
             });
-            // Output:
+
 
         });
 
