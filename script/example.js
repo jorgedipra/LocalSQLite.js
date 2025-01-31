@@ -174,36 +174,100 @@ db.load().then(() => {
 });
 
 db3.load().then(() => {
-    db3.createTable('users', ['id', 'name', 'age'], 'name');
-    db3.createTable('orders', ['id', 'userId', 'product'], 'product');
+    // Crear tablas con estructura clara
+    db3.createTable('clientes', ['nombre', 'pais'], 'nombre'); // Campo único: id
+    db3.createTable('pedidos', ['clienteId', 'producto', 'cantidad'], 'producto');
 
-    // Insertar datos
-    const dato1 = db3.insert('users', { name: 'Jorge', age: 30 }, false,[false]);// false en [] como [false] es para no mostrar mensaje de error en consola, pero si retorna este mensaje.
+    // Insertar datos  de prueba
+    const dato1 = db3.insert('clientes', { nombre: 'Ana', pais:"México" }, false,[false]);// false en [] como [false] es para no mostrar mensaje de error en consola, pero si retorna este mensaje.
     console.log(dato1);
 
-    db3.insert('users', { name: 'Ana', age: 25 }, true);
+    // Insertar datos
+    db3.MultipleInsert('clientes', [
+        { nombre: "Luis", pais: "España" },
+        { nombre: "Marta", pais: "Argentina" }, // Cliente sin pedidos
+        { nombre: "Carlos", pais: "Colombia" }
+    ]);
 
-    db3.insert('orders', { userId: 1, product: 'Laptop' }, false);
-    db3.insert('orders', { userId: 2, product: 'Smartphone' }, false);
-    db3.insert('orders', { userId: 1, product: 'Headphones' }, true);
+    db3.MultipleInsert('pedidos', [
+        { id: 101, clienteId: 1, producto: "Laptop", cantidad: 2 },
+        { id: 102, clienteId: 2, producto: "Mouse", cantidad: 5 },
+        { id: 103, clienteId: 1, producto: "Teclado", cantidad: 3 },
+        { id: 104, clienteId: 5, producto: "Monitor", cantidad: 1 }, // Pedido sin cliente
+        { id: 105, clienteId: 2, producto: "USB", cantidad: 10 }
+    ]);
 
 
-    const result1 = db3.select('users');
-    const result2 = db3.select('orders');
-    const result3 = db3.join('users', 'orders', 'id', 'userId');
+    const result1 = db3.select('clientes');
+    const result2 = db3.select('pedidos');
+
     console.info('------[OTRA BASE DE DATOS]-------')
     console.warn('-----------[tabla 1]-------------')
     // console.log(result);
     result1.forEach(record => {
-        console.log(`id: ${record.id}, nombre: ${record.name}, age: ${record.age}`);
+        console.log(`id: ${record.id}, nombre: ${record.nombre}, pais: ${record.pais}`);
     });
     console.warn('----------[tabla 2]--------------')
     result2.forEach(record => {
-        console.log(`id: ${record.id}, userId: ${record.userId}, product: ${record.product}`);
+        console.log(`id: ${record.id}, clienteId: ${record.clienteId}, product: ${record.producto}, cantidad: ${record.cantidad}`);
     });
-    console.warn('----------[join]--------------')
-    result3.forEach(record => {
-        console.log(`id: ${record.id}, Nombre: ${record.name}, Producto: ${record.product}`);
+
+    // 1. INNER JOIN: Solo coincidencias exactas
+    const inner = db3.join({
+        type: "INNER",
+        table1: "clientes",
+        table2: "pedidos",
+        on: { "clientes.id": "pedidos.clienteId" }
     });
+
+    console.warn("----- INNER JOIN -----");
+    inner.forEach(r => console.log(
+        `Cliente: ${r['clientes.nombre']} (${r['clientes.pais']}) | ` +
+        `Pedido: ${r['pedidos.producto']} x${r['pedidos.cantidad']}`
+    ));
+
+    // 2. LEFT JOIN: Todos los clientes + pedidos (aunque no tengan)
+    const left = db3.join({
+        type: "LEFT",
+        table1: "clientes",
+        table2: "pedidos",
+        on: { "clientes.id": "pedidos.clienteId" }
+    });
+
+    console.warn("\n----- LEFT JOIN -----");
+    left.forEach(r => console.log(
+        `Cliente: ${r['clientes.nombre']} | ` +
+        `Pedido: ${r['pedidos.producto'] || 'Ninguno'}`
+    ));
+
+    // 3. RIGHT JOIN: Todos los pedidos + clientes (aunque no existan)
+    const right = db3.join({
+        type: "RIGHT",
+        table1: "clientes",
+        table2: "pedidos",
+        on: { "clientes.id": "pedidos.clienteId" }
+    });
+
+    console.warn("\n----- RIGHT JOIN -----");
+    right.forEach(r => console.log(
+        `Pedido: ${r['pedidos.producto']} | ` +
+        `Cliente: ${r['clientes.nombre'] || 'Desconocido'}`
+    ));
+
+    // 4. FULL JOIN: Combinación completa
+    const full = db3.join({
+        type: "FULL",
+        table1: "clientes",
+        table2: "pedidos",
+        on: { "clientes.id": "pedidos.clienteId" }
+    });
+
+    console.warn("\n----- FULL JOIN -----");
+    full.forEach(r => console.log(
+        `Cliente: ${r['clientes.nombre'] || '--'} | ` +
+        `Pedido: ${r['pedidos.producto'] || '--'}`
+    ));
+
+
 
 });

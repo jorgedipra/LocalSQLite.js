@@ -214,7 +214,7 @@ resultsAfterDelete.forEach(record => {
 });
 ```
 ## 🔗 Uso de JOIN
-### JOIN 
+### JOIN (INNER, LEFT, RIGHT, FULL)
 ```SQL
 SELECT users.name, orders.product FROM users INNER JOIN orders ON users.id = orders.userId;
 ```
@@ -223,17 +223,33 @@ db3.load().then(() => {
     db3.createTable('users', ['id', 'name', 'age'], 'name');
     db3.createTable('orders', ['id', 'userId', 'product'], 'product');
 
-    db3.insert('users', { name: 'Jorge', age: 30 });
-    db3.insert('users', { name: 'Ana', age: 25 });
+    // Insertar datos
+    db3.MultipleInsert('clientes', [
+        { nombre: 'Ana', pais:"México" },
+        { nombre: "Luis", pais: "España" },
+        { nombre: "Marta", pais: "Argentina" }, // Cliente sin pedidos
+        { nombre: "Carlos", pais: "Colombia" }
+    ]);
 
-    db3.insert('orders', { userId: 1, product: 'Laptop' });
-    db3.insert('orders', { userId: 2, product: 'Smartphone' });
-    db3.insert('orders', { userId: 1, product: 'Headphones' });
+    db3.MultipleInsert('pedidos', [
+        { id: 101, clienteId: 1, producto: "Laptop", cantidad: 2 },
+        { id: 102, clienteId: 2, producto: "Mouse", cantidad: 5 },
+        { id: 103, clienteId: 1, producto: "Teclado", cantidad: 3 },
+        { id: 104, clienteId: 5, producto: "Monitor", cantidad: 1 }, // Pedido sin cliente
+        { id: 105, clienteId: 2, producto: "USB", cantidad: 10 }
+    ]);
 
-    const resultJoin = db3.join('users', 'orders', 'id', 'userId');
-    resultJoin.forEach(record => {
-        console.log(`Name: ${record.name}, Product: ${record.product}`);
+    const inner = db3.join({
+        type: "INNER",
+        table1: "clientes",
+        table2: "pedidos",
+        on: { "clientes.id": "pedidos.clienteId" }
     });
+
+    inner.forEach(r => console.log(
+        `Cliente: ${r['clientes.nombre']} (${r['clientes.pais']}) | ` +
+        `Pedido: ${r['pedidos.producto']} x${r['pedidos.cantidad']}`
+    ));
 });
 ```
 # 📖 Funcionalidades Implementadas
@@ -248,6 +264,7 @@ db3.load().then(() => {
     ✅ Soporte para UPDATE de registros
     ✅ Implementación de índices para Optimización de consultas
     ✅ Métodos de Agregación estos permite un Soporte a funciones como COUNT, SUM, AVG, MIN, MAX.
+    ✅ Mejorar JOINs
 
 # 🔧 Próximas Mejoras
     🔹 Implementación de transacciones con BEGIN y COMMIT
@@ -260,7 +277,6 @@ db3.load().then(() => {
     🔹 Soporte para Subconsultas
     🔹 Full-Text Search
     🔹 Triggers
-    🔹 Mejorar JOINs
     🔹 Métodos de Utilidad
     🔹 Seguridad (Cifra datos en localStorag y Previene inyección de operadores)
     🔹 Soporte para Promesas/Async

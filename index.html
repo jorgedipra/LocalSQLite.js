@@ -138,7 +138,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             const db = new DBEngine('joinDB');
             db.load(); // Cargar datos desde localStorage
-            const result = db.select('users');
+            const result = db.select('clientes');
 
         //---::impimir en html::---
             // Seleccionar el contenedor <ul> del DOM
@@ -148,8 +148,8 @@
                 const listItem = document.createElement('li');
                 listItem.innerHTML = `
                     User ID: ${record.id}, 
-                    Nombre: ${record.name}, 
-                    Edad: ${record.age}
+                    Nombre: ${record.nombre}, 
+                    Pais: ${record.pais}
                 `;
                 userList.appendChild(listItem);
             });
