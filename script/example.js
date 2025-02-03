@@ -268,6 +268,15 @@ db3.load().then(() => {
         `Pedido: ${r['pedidos.producto'] || '--'}`
     ));
 
+    // Exportar a JSON
+    const backup = db.exportDB();
+    console.log("Backup:", backup);
 
+    const dbNueva = new DBEngine("miDB");
+    dbNueva.importDB(backup); // Restaurar desde el backup
+
+    // Verificar datos
+    const users = dbNueva.select('users');
+    console.log("Usuarios después de importar:", users);    
 
 });
